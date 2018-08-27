@@ -48,37 +48,55 @@
 **
 ****************************************************************************/
 
+#ifndef TEXTEDITOR_H
+#define TEXTEDITOR_H
+
+#include <QMainWindow>
+
+QT_BEGIN_NAMESPACE
+class QAction;
+class QMenu;
+class QPlainTextEdit;
+class QSessionManager;
+QT_END_NAMESPACE
+
 //! [0]
-#include <QApplication>
-#include <QCommandLineParser>
-#include <QCommandLineOption>
-
-#include "texteditor.h"
-#include "mainwindow.h"
-
-int main(int argc, char *argv[])
+class TextEditor : public QMainWindow
 {
-    Q_INIT_RESOURCE(application);
+    Q_OBJECT
 
-    QApplication app(argc, argv);
-    QCoreApplication::setOrganizationName("firgaty");
-    QCoreApplication::setApplicationName("Site Helper");
-    QCoreApplication::setApplicationVersion(QT_VERSION_STR);
-    QCommandLineParser parser;
-    parser.setApplicationDescription(QCoreApplication::applicationName());
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addPositionalArgument("file", "The file to open.");
-    parser.process(app);
+public:
+    TextEditor();
 
-//    TextEditor mainWin;
-//    if (!parser.positionalArguments().isEmpty())
-//        mainWin.loadFile(parser.positionalArguments().first());
-//    mainWin.show();
+    void loadFile(const QString &fileName);
 
-    MainWindow mainWin;
-    mainWin.show();
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
-    return app.exec();
-}
+private slots:
+    void newFile();
+    void open();
+    bool save();
+    bool saveAs();
+    void about();
+    void documentWasModified();
+#ifndef QT_NO_SESSIONMANAGER
+    void commitData(QSessionManager &);
+#endif
+
+private:
+    void createActions();
+    void createStatusBar();
+    void readSettings();
+    void writeSettings();
+    bool maybeSave();
+    bool saveFile(const QString &fileName);
+    void setCurrentFile(const QString &fileName);
+    QString strippedName(const QString &fullFileName);
+
+    QPlainTextEdit *textEdit;
+    QString curFile;
+};
 //! [0]
+
+#endif
