@@ -1,64 +1,15 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of The Qt Company Ltd nor the names of its
-**     contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
-//! [0]
 #include <QtWidgets>
+#include <QDockWidget>
 
 #include "texteditor.h"
-//! [0]
+#include "imagepicker.h"
 
-//! [1]
 TextEditor::TextEditor()
     : textEdit(new QPlainTextEdit)
-//! [1] //! [2]
 {
+    // Closes this window when the main window closes.
+    this->setAttribute(Qt::WA_QuitOnClose, false);
+
     setCentralWidget(textEdit);
 
     createActions();
@@ -69,6 +20,13 @@ TextEditor::TextEditor()
     connect(textEdit->document(), &QTextDocument::contentsChanged,
             this, &TextEditor::documentWasModified);
 
+    // Image Picker.
+    QPushButton *button_img_picker = new QPushButton(tr("Add Image"));
+    QDockWidget *dock_widget = new QDockWidget();
+    dock_widget->layout()->addWidget(button_img_picker);
+    connect(button_img_picker, SIGNAL(released()), this, SLOT(pickImg()));
+    this->addDockWidget(Qt::LeftDockWidgetArea, dock_widget);
+
 #ifndef QT_NO_SESSIONMANAGER
     QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(qApp, &QGuiApplication::commitDataRequest,
@@ -78,11 +36,8 @@ TextEditor::TextEditor()
     setCurrentFile(QString());
     setUnifiedTitleAndToolBarOnMac(true);
 }
-//! [2]
 
-//! [3]
 void TextEditor::closeEvent(QCloseEvent *event)
-//! [3] //! [4]
 {
     if (maybeSave()) {
         writeSettings();
@@ -91,22 +46,16 @@ void TextEditor::closeEvent(QCloseEvent *event)
         event->ignore();
     }
 }
-//! [4]
 
-//! [5]
 void TextEditor::newFile()
-//! [5] //! [6]
 {
     if (maybeSave()) {
         textEdit->clear();
         setCurrentFile(QString());
     }
 }
-//! [6]
 
-//! [7]
 void TextEditor::open()
-//! [7] //! [8]
 {
     if (maybeSave()) {
         QString fileName = QFileDialog::getOpenFileName(this);
@@ -114,11 +63,8 @@ void TextEditor::open()
             loadFile(fileName);
     }
 }
-//! [8]
 
-//! [9]
 bool TextEditor::save()
-//! [9] //! [10]
 {
     if (curFile.isEmpty()) {
         return saveAs();
@@ -126,11 +72,8 @@ bool TextEditor::save()
         return saveFile(curFile);
     }
 }
-//! [10]
 
-//! [11]
 bool TextEditor::saveAs()
-//! [11] //! [12]
 {
     QFileDialog dialog(this);
     dialog.setWindowModality(Qt::WindowModal);
@@ -139,28 +82,19 @@ bool TextEditor::saveAs()
         return false;
     return saveFile(dialog.selectedFiles().first());
 }
-//! [12]
 
-//! [13]
 void TextEditor::about()
-//! [13] //! [14]
 {
    QMessageBox::about(this, tr("About Application"),
             tr("Site helper."));
 }
-//! [14]
 
-//! [15]
 void TextEditor::documentWasModified()
-//! [15] //! [16]
 {
     setWindowModified(textEdit->document()->isModified());
 }
-//! [16]
 
-//! [17]
 void TextEditor::createActions()
-//! [17] //! [18]
 {
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -173,7 +107,6 @@ void TextEditor::createActions()
     fileMenu->addAction(newAct);
     fileToolBar->addAction(newAct);
 
-//! [19]
     const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
     QAction *openAct = new QAction(openIcon, tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
@@ -181,7 +114,6 @@ void TextEditor::createActions()
     connect(openAct, &QAction::triggered, this, &TextEditor::open);
     fileMenu->addAction(openAct);
     fileToolBar->addAction(openAct);
-//! [18] //! [19]
 
     const QIcon saveIcon = QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
     QAction *saveAct = new QAction(saveIcon, tr("&Save"), this);
@@ -196,24 +128,21 @@ void TextEditor::createActions()
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
 
-//! [20]
-
     fileMenu->addSeparator();
 
     const QIcon exitIcon = QIcon::fromTheme("application-exit");
     QAction *exitAct = fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
+
     exitAct->setShortcuts(QKeySequence::Quit);
-//! [20]
     exitAct->setStatusTip(tr("Exit the application"));
 
-//! [21]
     QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
     QToolBar *editToolBar = addToolBar(tr("Edit"));
-//!
+
 #ifndef QT_NO_CLIPBOARD
+
     const QIcon cutIcon = QIcon::fromTheme("edit-cut", QIcon(":/images/cut.png"));
     QAction *cutAct = new QAction(cutIcon, tr("Cu&t"), this);
-//! [21]
     cutAct->setShortcuts(QKeySequence::Cut);
     cutAct->setStatusTip(tr("Cut the current selection's contents to the "
                             "clipboard"));
@@ -247,13 +176,9 @@ void TextEditor::createActions()
     QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &TextEditor::about);
     aboutAct->setStatusTip(tr("Show the application's About box"));
 
-//! [22]
-
     QAction *aboutQtAct = helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-//! [22]
 
-//! [23]
 #ifndef QT_NO_CLIPBOARD
     cutAct->setEnabled(false);
 //! [23] //! [24]
@@ -262,19 +187,13 @@ void TextEditor::createActions()
     connect(textEdit, &QPlainTextEdit::copyAvailable, copyAct, &QAction::setEnabled);
 #endif // !QT_NO_CLIPBOARD
 }
-//! [24]
 
-//! [32]
 void TextEditor::createStatusBar()
-//! [32] //! [33]
 {
     statusBar()->showMessage(tr("Ready"));
 }
-//! [33]
 
-//! [34] //! [35]
 void TextEditor::readSettings()
-//! [34] //! [36]
 {
     QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
     const QByteArray geometry = settings.value("geometry", QByteArray()).toByteArray();
@@ -287,20 +206,13 @@ void TextEditor::readSettings()
         restoreGeometry(geometry);
     }
 }
-//! [35] //! [36]
-
-//! [37] //! [38]
 void TextEditor::writeSettings()
-//! [37] //! [39]
 {
     QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
     settings.setValue("geometry", saveGeometry());
 }
-//! [38] //! [39]
 
-//! [40]
 bool TextEditor::maybeSave()
-//! [40] //! [41]
 {
     if (!textEdit->document()->isModified())
         return true;
@@ -319,11 +231,8 @@ bool TextEditor::maybeSave()
     }
     return true;
 }
-//! [41]
 
-//! [42]
 void TextEditor::loadFile(const QString &fileName)
-//! [42] //! [43]
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -345,11 +254,8 @@ void TextEditor::loadFile(const QString &fileName)
     setCurrentFile(fileName);
     statusBar()->showMessage(tr("File loaded"), 2000);
 }
-//! [43]
 
-//! [44]
 bool TextEditor::saveFile(const QString &fileName)
-//! [44] //! [45]
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -373,11 +279,8 @@ bool TextEditor::saveFile(const QString &fileName)
     statusBar()->showMessage(tr("File saved"), 2000);
     return true;
 }
-//! [45]
 
-//! [46]
 void TextEditor::setCurrentFile(const QString &fileName)
-//! [46] //! [47]
 {
     curFile = fileName;
     textEdit->document()->setModified(false);
@@ -388,16 +291,14 @@ void TextEditor::setCurrentFile(const QString &fileName)
         shownName = "untitled.txt";
     setWindowFilePath(shownName);
 }
-//! [47]
 
-//! [48]
 QString TextEditor::strippedName(const QString &fullFileName)
-//! [48] //! [49]
 {
     return QFileInfo(fullFileName).fileName();
 }
-//! [49]
+
 #ifndef QT_NO_SESSIONMANAGER
+
 void TextEditor::commitData(QSessionManager &manager)
 {
     if (manager.allowsInteraction()) {
@@ -410,3 +311,25 @@ void TextEditor::commitData(QSessionManager &manager)
     }
 }
 #endif
+
+void TextEditor::addHTMLImage(QString path, QString alt, QString caption) {
+  QString html = "\n\n<div class=\"post-image-div\">\n";
+    html += "    <a href=\"" + path + "\"><img src=\"" + path + "\" alt=\"" + alt + "\"></a>\n ";
+    if(caption != "")
+      html += "    <p>" + caption + "</p>\n";
+    else
+      html += "    <!-- <p>My possible caption.</p> -->\n";
+  html += "</div>\n\n";
+
+  this->textEdit->insertPlainText(html);
+}
+
+void TextEditor::pickImg() {
+  ImagePicker *picker = new ImagePicker(true, true);
+  this->connect(picker, SIGNAL(closedOk(QString, QString, QString)), this, SLOT(receiveImg(QString, QString, QString)));
+  picker->show();
+}
+
+void TextEditor::receiveImg(QString path, QString alt, QString caption) {
+  this->addHTMLImage(path, alt, caption);
+}

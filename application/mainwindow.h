@@ -17,6 +17,7 @@ private slots:
   void newPost();
   void siteSettings();
   void about();
+  void tutorial();
 
 signals:
 
@@ -27,7 +28,9 @@ private:
 
    QPushButton *m_button_post;
    QPushButton *m_button_settings;
+   QPushButton *m_button_tutorial;
    QPushButton *m_button_about;
+   QPushButton *m_close;
 };
 
 #endif // MAINWINDOW_H

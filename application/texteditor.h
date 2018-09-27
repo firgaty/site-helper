@@ -60,7 +60,6 @@ class QPlainTextEdit;
 class QSessionManager;
 QT_END_NAMESPACE
 
-//! [0]
 class TextEditor : public QMainWindow
 {
     Q_OBJECT
@@ -69,6 +68,7 @@ public:
     TextEditor();
 
     void loadFile(const QString &fileName);
+public slots:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -80,11 +80,14 @@ private slots:
     bool saveAs();
     void about();
     void documentWasModified();
+    void pickImg();
+    void receiveImg(QString path, QString alt, QString caption);
 #ifndef QT_NO_SESSIONMANAGER
     void commitData(QSessionManager &);
 #endif
 
 private:
+    void addHTMLImage(QString path, QString caption, QString alt);
     void createActions();
     void createStatusBar();
     void readSettings();
@@ -96,7 +99,9 @@ private:
 
     QPlainTextEdit *textEdit;
     QString curFile;
+
+    const int WIN_HEIGHT  = 400;
+    const int WIN_WIDTH   = 500;
 };
-//! [0]
 
 #endif

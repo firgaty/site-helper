@@ -53,8 +53,14 @@
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 
+#include <vector>
+
 #include "texteditor.h"
 #include "mainwindow.h"
+#include "parser.h"
+#include "tags.h"
+#include "app_settings.h"
+#include "authors.h"
 
 int main(int argc, char *argv[])
 {
@@ -76,9 +82,21 @@ int main(int argc, char *argv[])
 //        mainWin.loadFile(parser.positionalArguments().first());
 //    mainWin.show();
 
+    vector<Parser*> parsers(3);
+    parsers.push_back(AppSettings::instance());
+    parsers.push_back(Tags::instance());
+    parsers.push_back(Authors::instance());
+
     MainWindow mainWin;
     mainWin.show();
 
-    return app.exec();
+    int i = app.exec();
+
+    if(i != 0) return i;
+
+    for(unsigned long i(0); i < parsers.size(); i++) {
+      parsers.at(i)->save();
+    }
+
+    return 0;
 }
-//! [0]

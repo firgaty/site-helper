@@ -1,0 +1,75 @@
+#ifndef TAGS_H
+#define TAGS_H
+
+#include <string>
+#include <map>
+#include <yaml-cpp/yaml.h>
+
+class Tag {
+public:
+  Tag(std::string name = "", std::string description = "", std::string cover = "") {
+    _name = name;
+    _description = description;
+    _cover = cover;
+  }
+
+  std::string name        () const {return _name;}
+  std::string description () const {return _description;}
+  std::string cover       () const {return _cover;}
+
+  void setName        (std::string name)        {_name = name;}
+  void setDescription (std::string description) {_description = description;}
+  void setCover       (std::string cover)       {_cover = cover;}
+
+  std::string print() {return "Tag : " + _name;}
+
+private:
+  std::string _name;
+  std::string _description;
+  std::string _cover;
+};
+
+class Tags {
+public:
+  std::map<std::string, Tag> getTags();
+  bool save();
+
+private:
+  Tags(std::map<std::string, Tag> tags = std::map<std::string, Tag>());
+  bool parse();
+  
+  static Tags *_instance;  
+  
+  std::map<std::string, Tag> _tags;
+  bool _changed;
+};
+
+namespace YAML {
+  template<>
+  struct convert<Tag> {
+    static Node encode(const Tag& tag) {
+      Node node;
+      node["name"]        = tag.name();
+      node["description"] = tag.description();
+      node["cover"]       = tag.cover();
+      return node;
+    }
+
+    static bool decode(const Node& node, Tag& tag) {
+      if(!node.IsMap() || node.size() != 3) {
+        return false;
+      }
+
+      tag.setName(node["name"].as<std::string>());
+      if(node["description"].IsDefined())
+        tag.setDescription(node["description"].as<std::string>());
+      if(node["cover"].IsDefined())
+        tag.setCover(node["cover"].as<std::string>());
+
+      return true;
+    }
+  };
+}
+
+
+#endif // TAGS_H

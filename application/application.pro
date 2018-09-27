@@ -1,15 +1,37 @@
 QT += widgets
 requires(qtConfig(filedialog))
 
+CONFIG += console
+CONFIG += c++17
+
+QMAKE_CXXFLAGS += -std=c++17
+
 HEADERS       = \
     texteditor.h \
-    mainwindow.h
+    mainwindow.h \
+    imagepicker.h \
+    settingswindow.h \
+    settings.h \
+    yamlparser.h \
+    tags.h \
+    authors.h \
+    parser.h \
+    app_settings.h \
+    tagedit.h \
+    tagselector.h
 SOURCES       = main.cpp \
     texteditor.cpp \
-    mainwindow.cpp
-#! [0]
+    mainwindow.cpp \
+    imagepicker.cpp \
+    settingswindow.cpp \
+    settings.cpp \
+    yamlparser.cpp \
+    tags.cpp \
+    authors.cpp \
+    app_settings.cpp \
+    tagedit.cpp \
+    tagselector.cpp
 RESOURCES     = application.qrc
-#! [0]
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/application
@@ -29,3 +51,8 @@ else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/libraries/d
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/libraries/release/yaml-cpp.lib
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/libraries/debug/yaml-cpp.lib
 else:unix: PRE_TARGETDEPS += $$PWD/libraries/libyaml-cpp.a
+
+FORMS += \
+    settingswindow.ui \
+    tagselector_copy.ui \
+    tagselector.ui
